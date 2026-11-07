@@ -133,3 +133,56 @@ fetch('/api/v1/broadcast', { method: 'POST', body: data })
   </a>
 </div>
 ```
+
+---
+
+## 5. การเชื่อมต่อระบบ LINE และการตัดคำว่า "LINE LIFF" ออกจากหน้าจอ (LINE Integration & LIFF Sanitization)
+
+### ❌ ก่อนปรับปรุง (รั่วไหลคำว่า LINE LIFF สู่หน้าจอและบันทึกประวัติ)
+```html
+<!-- 1. หน้าจอตอนโหลด SDK -->
+<div id="loading" class="splash">
+  <div class="spinner"></div>
+  <p>กำลังเชื่อมต่อระบบ LINE LIFF (LIFF ID: 2007280264-vKuB0oR5)...</p>
+</div>
+
+<!-- 2. บันทึกไทม์ไลน์กิจกรรม (Activity Log) -->
+<li class="timeline-item">
+  <span class="time">10:30 น.</span>
+  <span class="actor">ช่างสมหมาย สายตรวจ</span>
+  <span class="action">ช่างสมหมาย กดรับเรื่องผ่าน LINE LIFF (ภายใน 10 นาที)</span>
+</li>
+
+<!-- 3. แจ้งเตือนเมื่อเปิดนอก LINE -->
+<div class="alert alert-warning">
+  <p>Error: ไม่รองรับการทำงานนอก LINE LIFF กรุณาเปิดผ่าน LINE LIFF เท่านั้น</p>
+</div>
+```
+
+### ✅ หลังปรับปรุง (ใช้ภาษาไทยที่สื่อถึง LINE ชัดเจน ปลอดภัย และไม่หลุดศัพท์ SDK)
+```html
+<!-- 1. หน้าจอตอนโหลด SDK -->
+<div id="loading" class="splash">
+  <div class="spinner" aria-hidden="true"></div>
+  <p>กำลังเปิดบริการผ่าน LINE...</p>
+</div>
+
+<!-- 2. บันทึกไทม์ไลน์กิจกรรม (Activity Log) -->
+<li class="timeline-item">
+  <span class="time">10:30 น.</span>
+  <span class="actor">ช่างสมหมาย สายตรวจ</span>
+  <span class="action">ช่างสมหมาย กดรับเรื่องผ่านแอป LINE (ภายใน 10 นาที)</span>
+</li>
+
+<!-- 3. แจ้งเตือนเมื่อเปิดนอก LINE (ตามสูตร 3 ส่วน) -->
+<div class="card alert-card" role="alert">
+  <h3>บริการนี้เปิดใช้งานผ่านแอปพลิเคชัน LINE</h3>
+  <p>
+    เพื่อความปลอดภัยและการยืนยันตัวตน กรุณากดเปิดบริการนี้จากห้องแชทในแอป LINE 
+    หรือสแกน QR Code ด้านล่างด้วยโทรศัพท์มือถือของคุณ
+  </p>
+  <div class="qr-container">
+    <img src="/images/line-qr.png" alt="สแกน QR เพื่อเปิดบริการบนแอป LINE" width="180" height="180" />
+  </div>
+</div>
+```

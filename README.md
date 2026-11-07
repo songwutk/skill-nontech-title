@@ -13,8 +13,9 @@ An AI Agent Skill designed to audit, sanitize, and rewrite user-facing UI/UX cop
 
 In many software projects, user interfaces are created by engineers who inadvertently expose internal architecture to end users:
 1. **Reconnaissance Risks (CWE-200):** Exposing backend platforms (`Cloudflare Pages`, `AWS S3`, `D1`), hostnames (`coophpr.thaiddns.com`), internal ports, or database errors (`ORA-00942`, `Duplicate entry for PRIMARY`) gives attackers valuable reconnaissance insight.
-2. **Developer Jargon & Cognitive Load:** Displaying database enums (`READY_FOR_TARGET_SETTER`), HTTP status codes (`HTTP 200`, `403`), concurrency settings (`Parallel Workers: 4`, `Min Gap: 0.35s`), or mathematical terms (`Modulo 11`) confuses non-technical frontline staff (e.g., healthcare workers, cooperative members, administrative personnel).
-3. **Dead-End Errors:** Generic messages like "An error occurred" or "No data found" leave users stranded without next steps.
+2. **Developer Jargon & Cognitive Load:** Displaying database enums (`READY_FOR_TARGET_SETTER`), HTTP status codes (`HTTP 200`, `403`), third-party SDKs (`LINE LIFF`, `LIFF ID`), concurrency settings (`Parallel Workers: 4`, `Min Gap: 0.35s`), or mathematical terms (`Modulo 11`) confuses non-technical frontline staff (e.g., healthcare workers, cooperative members, administrative personnel).
+3. **Third-Party SDK Exposure:** Leaking developer terms like `LINE LIFF` or `LIFF App` confuses everyday users who only know "LINE", while exposing LIFF IDs aids attacker reconnaissance.
+4. **Dead-End Errors:** Generic messages like "An error occurred" or "No data found" leave users stranded without next steps.
 
 This skill equips AI agents (Antigravity, Gemini CLI, Claude Code, Codex) with the domain rules, conversion dictionaries, and audit methodology proven on real-world systems like **PhosCCM** (Healthcare Campaign Manager) and **PhosCoop** (Hospital Cooperative Portal).
 

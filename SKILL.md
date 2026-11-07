@@ -5,14 +5,15 @@ description: |
   Use when:
   - Auditing UI/UX screens, frontend templates, forms, modals, or toasts for non-technical users (hospital staff, cooperative members, general public).
   - Removing developer jargon, backend enums, HTTP status codes, DB errors, stack traces, and infrastructure platforms from user screens.
+  - Eliminating third-party developer frameworks and SDK terminology (e.g. "LINE LIFF", "LIFF ID", "Webhook") from public views and timelines.
   - Sanitizing copy to prevent system reconnaissance, info leakage, and internal architecture exposure.
   - Writing user-facing error messages that adhere to the 3-part rule: (1) เกิดอะไรขึ้น (What happened), (2) เกิดจากอะไร (Why), and (3) ต้องแก้ไขอย่างไรพร้อมทางออก (Actionable remedy).
   - Designing zero-manual empty states and Poka-Yoke helper microcopy that guide users without needing training manuals.
 license: MIT
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
   author: "Songwut K."
-  keywords: ["ui-copy", "microcopy", "ux-writing", "security-sanitization", "plain-thai", "non-tech-ui", "poka-yoke"]
+  keywords: ["ui-copy", "microcopy", "ux-writing", "security-sanitization", "plain-thai", "non-tech-ui", "poka-yoke", "line-liff", "liff-sanitization"]
 ---
 
 # Non-Tech Title & Microcopy Sanitizer
@@ -57,9 +58,9 @@ Activate this skill when:
 
 ### Pillar 1: Security by Sanitization (Zero Reconnaissance)
 Technical terms leak reconnaissance data to potential attackers and induce anxiety in everyday users:
-- ❌ **Forbidden:** Mentioning server hosts (`coophpr.thaiddns.com`), cloud vendors (`Cloudflare Pages`, `AWS S3`), database names (`D1`, `PostgreSQL`), internal ports (`:8080`), framework tokens, or crypto algorithms (`Modulo 11`, `SHA256`).
+- ❌ **Forbidden:** Mentioning server hosts (`coophpr.thaiddns.com`), cloud vendors (`Cloudflare Pages`, `AWS S3`), database names (`D1`, `PostgreSQL`), internal ports (`:8080`), framework tokens, third-party SDKs (`LINE LIFF`, `LIFF ID`, `Webhook`), or crypto algorithms (`Modulo 11`, `SHA256`).
 - ❌ **Forbidden:** Showing raw HTTP status codes (`HTTP 200`, `404`, `500`) or database error dumps (`ORA-00942`, `Duplicate entry 'xxx' for key 'PRIMARY'`).
-- ✅ **Sanitized:** State what the system accomplished or what human action is required, keeping all technical telemetry in internal logs only.
+- ✅ **Sanitized:** State what the system accomplished or what human action is required, keeping all technical telemetry in internal logs only (e.g. use "เปิดผ่านแอป LINE" instead of "เปิดผ่าน LINE LIFF").
 
 ### Pillar 2: Zero-Manual Usability (Human Outcome Over Mechanism)
 Users do not care about the system's internal processing pipeline; they care about their real-world task:
@@ -106,6 +107,9 @@ Every error toast, banner, or dialog **must** have all three parts:
 | **ข้อมูลระบบ (Infra Leaks)** | `Deploy บน Cloudflare Pages / D1` | *(ตัดออกทั้งหมด)* | ป้องกัน Reconnaissance ของโครงสร้างคลาวด์ |
 | | `เซิร์ฟเวอร์: coophpr.thaiddns.com` | *(ตัดออกจากหน้าล็อกอิน)* | ป้องกันการชี้เป้าโฮสต์และโดเมนหลังบ้าน |
 | | `GitHub Repository` | **ศูนย์ช่วยเหลือและแจ้งปัญหาการใช้งาน** | ไม่นำคำศัพท์ของนักพัฒนามาปนกับหน่วยงาน |
+| **เฟรมเวิร์กเชื่อมต่อ (SDKs)** | `เปิดผ่าน LINE LIFF` / `Login ผ่าน LIFF` | **เปิดผ่านแอปพลิเคชัน LINE** / **เข้าสู่ระบบด้วย LINE** | ผู้ใช้รู้จัก "LINE" แต่ไม่รู้จัก "LIFF" ที่เป็นชื่อ SDK |
+| | `LIFF ID ไม่ถูกต้อง / LIFF Init Error` | **ไม่สามารถเชื่อมต่อกับ LINE ได้ กรุณาเปิดจากเมนูในแอป LINE อีกครั้ง** | ลบชื่อทางเทคนิค พร้อมบอกวิธีแก้ |
+| | `กดรับเรื่องผ่าน LINE LIFF` | **กดรับเรื่องผ่าน LINE** | ลบคำว่า LIFF ใน Activity Log / ไทม์ไลน์งาน |
 | **ปุ่มและการกระทำ (Actions)** | `Reset Form` / `Clear Data` | **ล้างข้อมูลที่กรอกทั้งหมด** | ชี้ชัดว่าจะเกิดอะไรขึ้นกับข้อมูล |
 | | `Submit` / `Execute Batch` | **ส่งข้อมูล** / **เริ่มการส่งข้อความ** | ใช้คำกริยาภาษาไทยที่สื่อความหมายชัดเจน |
 | | `Download (PDF) (1.2MB)` | **ดาวน์โหลดเอกสาร (1.2 MB)** | ไม่ต้องใส่วงเล็บซ้ำซ้อน สื่อสารให้ตรงประเด็น |
@@ -124,6 +128,7 @@ Step 1: Scan for Security Leaks
 
 Step 2: Scrub Developer Jargon & Enums
   ├── Backend database constants (ALL_CAPS_ENUMS, boolean flags)
+  ├── Third-party SDK & framework names (LINE LIFF, LIFF ID, Webhook, API Client)
   ├── Concurrency & algorithmic terms (Workers, Threads, Modulo 11, Regex)
   └── Developer commands (Execute, Fetch, Payload, Cache, Callback)
 

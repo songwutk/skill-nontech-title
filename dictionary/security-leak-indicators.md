@@ -52,6 +52,15 @@
 - **ความเสี่ยง:** บัญชีทดสอบที่ลืมเอาออกในหน้า Production มักเป็นช่องทางที่ถูกเจาะบ่อยที่สุด ส่วนลิงก์ Repo อาจนำไปสู่โค้ดต้นฉบับหรือประวัติ Commit ที่มีกุญแจลับ
 - **แนวทางแก้ไข:** ซ่อนปุ่มสลับโหมดและข้อมูลทดสอบด้วย Environment Flag (`NODE_ENV === 'production'`) และตัดลิงก์ Git Repository ออกจากหน้าจอผู้ใช้
 
+### 1.6 เฟรมเวิร์กเชื่อมต่อภายนอกและ Client SDK (Third-Party SDKs & LINE LIFF Leaks)
+- **ตัวอย่างข้อความที่รั่วไหล:**
+  - `LINE LIFF App Error: Invalid liffId (2007280264-xxxx)`
+  - `กรุณาเปิดผ่าน LINE LIFF เท่านั้น`
+  - `ช่าง... กดรับเรื่องผ่าน LINE LIFF`
+  - `Webhook failed: Invalid LINE Channel Secret or Access Token`
+- **ความเสี่ยง:** การเปิดเผยชื่อเฟรมเวิร์กและ LIFF ID หรือ Channel Secret เปิดโอกาสให้ผู้ไม่ประสงค์ดีแกะรอย (Trace) ไปยังบัญชีผู้พัฒนา LINE Developers, ตรวจสอบ Scope สิทธิ์ที่ขอจากผู้ใช้, หรือจำลองการส่งข้อมูล (Spoofing) เข้าสู่ระบบ
+- **แนวทางแก้ไข:** ตัดคำว่า "LIFF" ออกจากทุกส่วนของหน้าจอและ Activity Log โดยใช้คำว่า "LINE" หรือ "แอปพลิเคชัน LINE" แทน และซ่อน Client ID / Secret ไว้ในไฟล์คอนฟิกหลังบ้านเสมอ
+
 ---
 
 ## 2. เช็กลิสต์ตรวจจับความเสี่ยง (Audit Regex & Keywords)
@@ -71,6 +80,9 @@ grep -riE "(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|PRIMARY\s+KEY|Foreign\s+Key|O
 # สแกนหาชื่ออัลกอริทึมและศัพท์คณิตศาสตร์
 grep -riE "(modulo\s*11|sha256|md5|bcrypt|jwt|hmac|base64)" src/
 
+# สแกนหาเฟรมเวิร์กภายนอกและ SDK (LINE LIFF, Webhook)
+grep -riE "(liff|liffId|line_liff|liff\.init|webhook|channel_secret)" src/
+
 # สแกนหาหมายเลข IP พอร์ต หรือโดเมนชี้เป้า
 grep -riE "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|thaiddns|ddns|localhost:[0-9]+|:8080|:3000|:5000)" src/
 ```
@@ -85,3 +97,4 @@ grep -riE "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|thaiddns|ddns|localho
 | รหัสผ่านผิด | `Incorrect password for user 'songwut' (Bcrypt hash check failed)` | `ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง` | ป้องกัน User Enumeration และปิดบัง Algorithm |
 | อัปโหลดไฟล์ | `Upload failed: R2 bucket quota exceeded or S3 connection timeout` | `ระบบพื้นที่จัดเก็บเต็มชั่วคราว กรุณาติดต่อผู้ดูแลระบบ (โทร. 1234)` | ปิดบังผู้ให้บริการคลาวด์และสถาปัตยกรรม |
 | ฐานข้อมูลชนกัน | `IntegrityConstraintViolation: duplicate key value violates unique constraint "users_email_key"` | `อีเมลนี้ถูกใช้งานในระบบแล้ว กรุณาใช้อีเมลอื่นหรือกดลืมรหัสผ่าน` | ปิดบังชื่อ Schema, Constraint, และฐานข้อมูล |
+| บริการ LINE | `กรุณาเปิดผ่าน LINE LIFF (LIFF ID: 2007280264-xxxx)` | `กรุณาเปิดผ่านแอปพลิเคชัน LINE` | ปิดบัง LIFF ID และไม่ใช้ศัพท์ SDK ที่คนทั่วไปไม่เข้าใจ |

@@ -43,6 +43,21 @@ This skill equips AI agents (Antigravity, Gemini CLI, Claude Code, Codex) with t
 
 ---
 
+## 🚫 The Strictly Prohibited Technical Terms
+
+The following backend and infrastructure terms **must never appear** in user screens, error toasts, activity logs, or public footers:
+
+| Forbidden Term | Where It Typically Leaks | Safe Non-Technical Alternative |
+|---|---|---|
+| **`Cloudflare`** | `Deploy บน Cloudflare Pages`, `Cloudflare Ray ID` | Remove from UI; log Ray ID internally |
+| **`R2`** | `R2 bucket upload failed`, `R2 quota exceeded` | "ไม่สามารถบันทึกไฟล์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง" |
+| **`D1`** | `D1_ERROR: stepping`, `Cloudflare D1 query failed` | "ระบบฐานข้อมูลขัดข้องชั่วคราว เจ้าหน้าที่ได้รับแจ้งแล้ว" |
+| **`MySQL`** | `MySQL server has gone away`, `MySQL Error 1062` | "ข้อมูลนี้มีอยู่ในระบบแล้ว" / "ไม่สามารถเชื่อมต่อฐานข้อมูลได้" |
+| **`JWT`** | `JWT token expired`, `Invalid JWT signature` | "เซสชันหมดอายุเพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง" |
+| **`LINE LIFF`** | `เข้าผ่าน LINE LIFF`, `LIFF ID ไม่ถูกต้อง` | "เปิดผ่านแอปพลิเคชัน LINE" / "เข้าใช้งานด้วย LINE" |
+
+---
+
 ## 🚀 Installation & Setup
 
 ### Option 1: For Antigravity & Agent CLI

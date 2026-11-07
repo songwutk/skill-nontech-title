@@ -186,3 +186,70 @@ fetch('/api/v1/broadcast', { method: 'POST', body: data })
   </div>
 </div>
 ```
+
+---
+
+## 6. การจัดการข้อผิดพลาดกลุ่ม 5 ศัพท์ต้องห้าม (The Big 5: Cloudflare, R2, D1, MySQL, JWT)
+
+### ❌ ก่อนปรับปรุง (รั่วไหลสถาปัตยกรรมคลาวด์และเอนจินฐานข้อมูล)
+```javascript
+// 1. Cloudflare R2 Upload Error
+function handleUploadError(err) {
+  toast.error(`Cloudflare R2 Bucket upload failed: ${err.message} (Ray ID: ${err.rayId})`);
+}
+
+// 2. D1 / MySQL Database Crash
+function handleDatabaseError(dbErr) {
+  if (dbErr.code === 'ER_DUP_ENTRY') {
+    alert('MySQL Error 1062: Duplicate entry for key members.PRIMARY');
+  } else if (dbErr.message.includes('D1_ERROR')) {
+    alert(`Cloudflare D1 Query Failed: ${dbErr.message}`);
+  }
+}
+
+// 3. JWT Authentication Failure
+function checkAuthToken(response) {
+  if (response.status === 401) {
+    showModal('Authentication Error: JWT token expired or invalid signature');
+  }
+}
+```
+
+### ✅ หลังปรับปรุง (ซ่อนข้อมูลเชิงเทคนิคทั้งหมด และแสดงข้อความที่ให้ทางออกแก่ผู้ใช้)
+```javascript
+// 1. จัดเก็บไฟล์ (ปลอดภัย ไม่เอ่ยชื่อ Cloudflare หรือ R2)
+function handleUploadError(err) {
+  console.error('[Internal R2 Upload Failure]', err); // บันทึกลง telemetry หลังบ้าน
+  toast.error({
+    title: 'ไม่สามารถอัปโหลดไฟล์ได้ในขณะนี้',
+    message: 'ระบบพื้นที่จัดเก็บบริการขัดข้องชั่วคราว กรุณารอสักครู่แล้วลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ โทร. 1234',
+    duration: 5000
+  });
+}
+
+// 2. ฐานข้อมูล (ปลอดภัย ไม่เอ่ยชื่อ D1 หรือ MySQL)
+function handleDatabaseError(dbErr) {
+  console.error('[Internal Database Exception]', dbErr);
+  if (dbErr.code === 'ER_DUP_ENTRY' || dbErr.message.includes('UNIQUE')) {
+    showAlertModal({
+      title: 'ข้อมูลนี้มีอยู่ในระบบแล้ว',
+      message: 'เลขบัตรประชาชนหรือรหัสที่ท่านระบุมีบันทึกอยู่ในระบบเรียบร้อยแล้ว กรุณาตรวจสอบตัวเลขอีกครั้ง หรือค้นหาข้อมูลเดิม',
+      actionText: 'ตรวจสอบข้อมูลเดิม'
+    });
+  } else {
+    showToast('ระบบฐานข้อมูลขัดข้องชั่วคราว เจ้าหน้าที่ได้รับแจ้งแล้ว กรุณาลองใหม่อีกครั้งใน 5 นาที');
+  }
+}
+
+// 3. ยืนยันตัวตน (ปลอดภัย ไม่เอ่ยคำว่า JWT)
+function checkAuthToken(response) {
+  if (response.status === 401) {
+    showSessionExpiredModal({
+      title: 'หมดเวลาการเชื่อมต่อเพื่อความปลอดภัย',
+      message: 'ท่านไม่ได้ทำรายการนานเกินกำหนด เพื่อความปลอดภัยของข้อมูล กรุณาลงชื่อเข้าใช้งานใหม่อีกครั้ง',
+      buttonText: 'เข้าสู่ระบบอีกครั้ง',
+      onConfirm: () => { window.location.href = '/login'; }
+    });
+  }
+}
+```

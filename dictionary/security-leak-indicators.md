@@ -17,32 +17,38 @@
 - **ความเสี่ยง:** ชี้เป้าโดเมน DDNS, IP ภายใน, และพอร์ตบริการ ทำให้ผู้โจมตีทราบเป้าหมายที่แท้จริงแม้ระบบจะอยู่หลัง Reverse Proxy หรือ CDN
 - **แนวทางแก้ไข:** ลบชื่อโฮสต์และพอร์ตออกจากหน้าจอทั้งหมด หากต้องการแสดงสถานะ ให้ใช้ข้อความเช่น `"สถานะ: เชื่อมต่อปกติ"` เท่านั้น
 
-### 1.2 โครงสร้างและเทคโนโลยีคลาวด์ (Cloud Platforms & Infrastructure)
+### 1.2 โครงสร้างและเทคโนโลยีคลาวด์ (Cloud Platforms & Infrastructure: Cloudflare, R2)
 - **ตัวอย่างข้อความที่รั่วไหล:**
-  - `Deploy บน Cloudflare Pages / D1 Database`
-  - `File stored in AWS S3 Bucket: hospital-patients-prod`
+  - `Deploy บน Cloudflare Pages`
+  - `Cloudflare Ray ID: 88219afbc01`
+  - `File stored in Cloudflare R2 Bucket: hospital-patients-prod`
+  - `Upload error: R2 bucket quota exceeded or S3 connection timeout`
   - `Processed by Worker: cf-worker-phosccm-prod-02`
-- **ความเสี่ยง:** เปิดเผยสถาปัตยกรรมคลาวด์ (Cloud Architecture Fingerprinting) ทำให้ผู้โจมตีสามารถค้นหาช่องโหว่เฉพาะแพลตฟอร์ม (Platform-specific exploits หรือ Bucket enumeration)
-- **แนวทางแก้ไข:** ห้ามระบุชื่อแบรนด์คลาวด์หรือชื่อ Bucket บนหน้าจอเด็ดขาด
+- **ความเสี่ยง:** เปิดเผยสถาปัตยกรรมคลาวด์ (Cloud Architecture Fingerprinting) ทำให้ผู้โจมตีสามารถค้นหาช่องโหว่เฉพาะแพลตฟอร์ม เช่น R2 bucket enumeration หรือวิเคราะห์ edge worker routing
+- **แนวทางแก้ไข:** ห้ามระบุคำว่า `Cloudflare`, `R2` หรือชื่อ Bucket บนหน้าจอเด็ดขาด
 
-### 1.3 โครงสร้างฐานข้อมูลและข้อผิดพลาด SQL (Database Schema & SQL Leaks)
+### 1.3 โครงสร้างฐานข้อมูลและข้อผิดพลาด SQL (Database Schema & SQL Leaks: D1, MySQL)
 - **ตัวอย่างข้อความที่รั่วไหล:**
-  - `Duplicate entry '3540100...' for key 'members.PRIMARY'`
+  - `D1_ERROR: stepping, table members has no column named cid_hash`
+  - `Cloudflare D1 batch execution failed: D1_TYPE_ERROR`
+  - `MySQL Error 1062: Duplicate entry '3540100...' for key 'members.PRIMARY'`
+  - `MySQL server has gone away`
   - `ORA-00942: table or view does not exist`
   - `PostgreSQL foreign key constraint "fk_campaign_author" failed`
-  - `column "cid_hash" of relation "patients" does not exist`
-- **ความเสี่ยง:** เปิดเผยชื่อตาราง (Table), ชื่อคอลัมน์ (Column), และชนิดของฐานข้อมูล เป็นข้อมูลชั้นยอดสำหรับทำ SQL Injection
+- **ความเสี่ยง:** เปิดเผยชื่อฐานข้อมูล (`D1`, `MySQL`), ชื่อตาราง (Table), และโครงสร้างคอลัมน์ (Column) เป็นข้อมูลชั้นยอดสำหรับทำ SQL Injection
 - **แนวทางแก้ไข:** ดักจับ Exception ใน Backend และส่งเฉพาะรหัสอ้างอิงข้อผิดพลาด (Trace ID / Reference ID) มายังหน้าบ้าน เช่น:
   > *"ไม่สามารถบันทึกข้อมูลได้ เนื่องจากข้อมูลนี้มีอยู่ในระบบแล้ว (รหัสอ้างอิง: ERR-8821)"*
 
-### 1.4 กลไกและขั้นตอนวิธีทางความปลอดภัย (Cryptographic & Algorithmic Details)
+### 1.4 กลไกและขั้นตอนวิธีทางความปลอดภัย (Cryptographic & Algorithmic Details: JWT, Modulo 11)
 - **ตัวอย่างข้อความที่รั่วไหล:**
+  - `JWT expired: Token expiration date is 2026-11-07T12:00:00Z`
+  - `Invalid JWT signature (JsonWebTokenError)`
+  - `Malformed JWT: Bearer token is missing payload segment`
   - `เลขประจำตัวประชาชน 13 หลักไม่ถูกต้องตามหลัก Modulo 11`
   - `Password validation failed: Bcrypt hash mismatch`
-  - `Token signature invalid (HMAC-SHA256)`
-- **ความเสี่ยง:** บอกให้ผู้โจมตีรู้ว่าระบบใช้ขั้นตอนวิธีใดในการตรวจสอบ ซึ่งช่วยลดขอบเขตการคำนวณในการทำ Brute-force หรือบายพาส
+- **ความเสี่ยง:** บอกให้ผู้โจมตีรู้ว่าระบบใช้โทเคน `JWT` หรือขั้นตอนวิธีใดในการตรวจสอบ ช่วยลดขอบเขตการคำนวณในการทำ Brute-force หรือโจมตีช่องโหว่ของอัลกอริทึม
 - **แนวทางแก้ไข:** ใช้ภาษาทั่วไปที่ไม่ระบุชื่ออัลกอริทึม:
-  > *"เลขบัตรประชาชนไม่ถูกต้อง — กรุณาตรวจตัวเลขอีกครั้ง"*
+  > *"เซสชันการใช้งานหมดอายุเพื่อความปลอดภัย — กรุณาเข้าสู่ระบบใหม่อีกครั้ง"* หรือ *"เลขบัตรประชาชนไม่ถูกต้อง — กรุณาตรวจตัวเลขอีกครั้ง"*
 
 ### 1.5 ข้อมูลการทดสอบและสิทธิ์ผู้ดูแลระบบ (Demo Credentials & Test Artefacts)
 - **ตัวอย่างข้อความที่รั่วไหล:**
@@ -68,6 +74,9 @@
 เมื่อตรวจโค้ดหน้าบ้าน (HTML / JS / TSX / Vue) ให้ใช้ Regex สแกนหาคำศัพท์ต้องห้ามเหล่านี้:
 
 ```bash
+# 🎯 คำสั่งสแกนด่วนหา 5 ศัพท์เทคนิคต้องห้ามหลัก (Cloudflare, R2, D1, MySQL, JWT)
+grep -riE "(cloudflare|r2_bucket|\br2\b|d1_error|\bd1\b|mysql|jwt)" src/
+
 # สแกนหาชื่อแพลตฟอร์มโครงสร้างพื้นฐาน
 grep -riE "(cloudflare|aws|s3|azure|gcp|docker|nginx|apache|redis|memcached|d1|r2)" src/
 
@@ -75,7 +84,7 @@ grep -riE "(cloudflare|aws|s3|azure|gcp|docker|nginx|apache|redis|memcached|d1|r
 grep -riE "(HTTP\s*[2-5][0-9]{2}|Error\s*[2-5][0-9]{2}|Status:\s*[2-5][0-9]{2})" src/
 
 # สแกนหาชื่อฐานข้อมูล ตาราง หรือข้อผิดพลาด SQL
-grep -riE "(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|PRIMARY\s+KEY|Foreign\s+Key|ORA-|pg_|sqlite|mysql)" src/
+grep -riE "(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|PRIMARY\s+KEY|Foreign\s+Key|ORA-|pg_|sqlite|mysql|d1_error)" src/
 
 # สแกนหาชื่ออัลกอริทึมและศัพท์คณิตศาสตร์
 grep -riE "(modulo\s*11|sha256|md5|bcrypt|jwt|hmac|base64)" src/
@@ -93,8 +102,11 @@ grep -riE "([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|thaiddns|ddns|localho
 
 | บริบท (Context) | ข้อความเดิมที่มีความเสี่ยง | ข้อความใหม่ที่ปลอดภัย | ผลลัพธ์ด้านความปลอดภัย |
 |---|---|---|---|
+| **Cloudflare** | `Deploy บน Cloudflare Pages (Ray ID: 88219afbc01)` | *(ตัดออกจากหน้าจอทั้งหมด)* | ปิดบัง CDN/WAF และ Ray ID |
+| **R2** | `Upload failed: R2 bucket quota exceeded` | `ระบบพื้นที่จัดเก็บเอกสารขัดข้องชั่วคราว กรุณาติดต่อผู้ดูแลระบบ (โทร. 1234)` | ปิดบังชื่อ Cloudflare R2 |
+| **D1** | `D1_ERROR: query execution failed in members table` | `ไม่สามารถดึงข้อมูลสมาชิกได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง` | ปิดบัง Cloudflare D1 และชื่อ Table |
+| **MySQL** | `MySQL Error 1062: Duplicate entry for PRIMARY` | `ข้อมูลนี้มีอยู่ในระบบแล้ว (เลขบัตร/รหัสซ้ำ)` | ปิดบังเอนจิน MySQL และ Error code |
+| **JWT** | `Error: JWT expired or Invalid JWT signature` | `เซสชันหมดอายุเพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง` | ปิดบังโปรโตคอล JWT และโครงสร้างโทเคน |
 | ข้อผิดพลาด API | `Fetch failed: 502 Bad Gateway to api.coop.internal:8443` | `ไม่สามารถเชื่อมต่อระบบได้ชั่วคราว กรุณาลองใหม่อีกครั้ง` | ปิดบัง Internal IP, Domain, Port |
 | รหัสผ่านผิด | `Incorrect password for user 'songwut' (Bcrypt hash check failed)` | `ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง` | ป้องกัน User Enumeration และปิดบัง Algorithm |
-| อัปโหลดไฟล์ | `Upload failed: R2 bucket quota exceeded or S3 connection timeout` | `ระบบพื้นที่จัดเก็บเต็มชั่วคราว กรุณาติดต่อผู้ดูแลระบบ (โทร. 1234)` | ปิดบังผู้ให้บริการคลาวด์และสถาปัตยกรรม |
-| ฐานข้อมูลชนกัน | `IntegrityConstraintViolation: duplicate key value violates unique constraint "users_email_key"` | `อีเมลนี้ถูกใช้งานในระบบแล้ว กรุณาใช้อีเมลอื่นหรือกดลืมรหัสผ่าน` | ปิดบังชื่อ Schema, Constraint, และฐานข้อมูล |
 | บริการ LINE | `กรุณาเปิดผ่าน LINE LIFF (LIFF ID: 2007280264-xxxx)` | `กรุณาเปิดผ่านแอปพลิเคชัน LINE` | ปิดบัง LIFF ID และไม่ใช้ศัพท์ SDK ที่คนทั่วไปไม่เข้าใจ |

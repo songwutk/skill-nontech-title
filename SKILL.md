@@ -11,9 +11,9 @@ description: |
   - Designing zero-manual empty states and Poka-Yoke helper microcopy that guide users without needing training manuals.
 license: MIT
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
   author: "Songwut K."
-  keywords: ["ui-copy", "microcopy", "ux-writing", "security-sanitization", "plain-thai", "non-tech-ui", "poka-yoke", "line-liff", "liff-sanitization"]
+  keywords: ["ui-copy", "microcopy", "ux-writing", "security-sanitization", "plain-thai", "non-tech-ui", "poka-yoke", "line-liff", "liff-sanitization", "cloudflare", "r2", "d1", "mysql", "jwt"]
 ---
 
 # Non-Tech Title & Microcopy Sanitizer
@@ -62,6 +62,13 @@ Technical terms leak reconnaissance data to potential attackers and induce anxie
 - ❌ **Forbidden:** Showing raw HTTP status codes (`HTTP 200`, `404`, `500`) or database error dumps (`ORA-00942`, `Duplicate entry 'xxx' for key 'PRIMARY'`).
 - ✅ **Sanitized:** State what the system accomplished or what human action is required, keeping all technical telemetry in internal logs only (e.g. use "เปิดผ่านแอป LINE" instead of "เปิดผ่าน LINE LIFF").
 
+#### 🚨 5 คำศัพท์เทคนิคต้องห้ามเด็ดขาดบนหน้าจอผู้ใช้ (The Big 5 Strictly Prohibited Terms)
+1. **`Cloudflare`** — ห้ามแสดงชื่อโฮสต์/CDN/WAF เช่น `Deploy บน Cloudflare Pages`, `Cloudflare Ray ID`, หรือ Cloudflare 5xx Error หน้าบ้าน
+2. **`R2`** — ห้ามแสดงชื่อ Cloudflare R2 Object Storage, Bucket URL, หรือ `Upload to R2 failed`
+3. **`D1`** — ห้ามแสดงชื่อ Cloudflare D1 Database, `D1_ERROR`, หรือข้อผิดพลาดการคิวรีฐานข้อมูล D1
+4. **`MySQL`** — ห้ามแสดงชื่อเอนจินฐานข้อมูล, ตาราง, หรือข้อผิดพลาด `MySQL server has gone away`, `MySQL Error 1062`
+5. **`JWT`** — ห้ามแสดงคำว่า `JWT`, `JWT Token expired`, `Invalid JWT signature`, หรือ `Bearer token` ต่อหน้าผู้ใช้ทั่วไป
+
 ### Pillar 2: Zero-Manual Usability (Human Outcome Over Mechanism)
 Users do not care about the system's internal processing pipeline; they care about their real-world task:
 - ❌ **Mechanism:** "ส่งต่องานไปยังผู้กำหนดเป้าหมาย" (Forwarding task to target setter system entity)
@@ -104,7 +111,11 @@ Every error toast, banner, or dialog **must** have all three parts:
 | **ประสิทธิภาพ (Concurrency)** | `จำนวน Parallel Workers: 4 Workers` | **ความเร็วในการส่ง: ปกติ (แนะนำ)** | แปลงจำนวนเธรดเป็นระดับความเร็วที่เข้าใจง่าย |
 | | `Min Gap: 0.35s` | *(ตัดออกจากหน้าจอ ใช้ค่ามาตรฐานระบบ)* | พารามิเตอร์ภายในไม่ควรให้ผู้ใช้ปรับแต่งเอง |
 | | `Ping Latency: 42ms` | **สถานะเครือข่าย: เชื่อมต่อปกติ** | แปลงตัวเลขมิลลิวินาทีเป็นสถานะความพร้อม |
-| **ข้อมูลระบบ (Infra Leaks)** | `Deploy บน Cloudflare Pages / D1` | *(ตัดออกทั้งหมด)* | ป้องกัน Reconnaissance ของโครงสร้างคลาวด์ |
+| **ข้อมูลระบบ (Infra Leaks)** | `Cloudflare` (`Deploy บน Cloudflare Pages`) | *(ตัดออกทั้งหมด)* | ป้องกัน Reconnaissance ของโครงสร้างคลาวด์ |
+| | `R2` (`Upload failed: R2 bucket error`) | **ไม่สามารถบันทึกไฟล์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง** | ตัดชื่อบริการจัดเก็บไฟล์ Cloudflare R2 |
+| | `D1` (`D1_ERROR: query syntax error`) | **ระบบฐานข้อมูลขัดข้องชั่วคราว เจ้าหน้าที่กำลังตรวจสอบ** | ตัดชื่อฐานข้อมูล Cloudflare D1 |
+| | `MySQL` (`MySQL server has gone away / Error 1062`) | **ข้อมูลนี้มีอยู่ในระบบแล้ว / ไม่สามารถเชื่อมต่อระบบได้ชั่วคราว** | ตัดชื่อเอนจิน MySQL และ Error code |
+| | `JWT` (`JWT token expired / signature invalid`) | **เซสชันหมดอายุเพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง** | ผู้ใช้ไม่รู้จัก JWT แปลงเป็นแจ้งหมดเวลาเซสชัน |
 | | `เซิร์ฟเวอร์: coophpr.thaiddns.com` | *(ตัดออกจากหน้าล็อกอิน)* | ป้องกันการชี้เป้าโฮสต์และโดเมนหลังบ้าน |
 | | `GitHub Repository` | **ศูนย์ช่วยเหลือและแจ้งปัญหาการใช้งาน** | ไม่นำคำศัพท์ของนักพัฒนามาปนกับหน่วยงาน |
 | **เฟรมเวิร์กเชื่อมต่อ (SDKs)** | `เปิดผ่าน LINE LIFF` / `Login ผ่าน LIFF` | **เปิดผ่านแอปพลิเคชัน LINE** / **เข้าสู่ระบบด้วย LINE** | ผู้ใช้รู้จัก "LINE" แต่ไม่รู้จัก "LIFF" ที่เป็นชื่อ SDK |
